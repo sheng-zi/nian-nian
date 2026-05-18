@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>念念 · 管理后台</title>
+<link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+<style>
+/* ═══════════════════════════════════════════
+   "Moonlit Rose Garden" — Admin Design System
+   Matching the app aesthetic
+   ═══════════════════════════════════════════ */
+
+:root {
+  --rose: #c4547b;
+  --rose-dark: #a33d61;
+  --rose-light: #f6e4ec;
+  --gold: #c9a44b;
+  --bg: #faf7f5;
+  --card: #ffffff;
+  --text: #2d2630;
+  --text-secondary: #6b5e6a;
+  --text-muted: #a398a2;
+  --sidebar: #1f1a24;
+  --sidebar-hover: #2a2430;
+  --sidebar-active: #352d3c;
+  --font-sans: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,-apple-system,sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+/* ═══ Login ─── */
+.login-page {
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(165deg, #faf7f5 0%, #f6e4ec 30%, #faf7f5 60%, #f6f3f7 100%);
+  padding: 24px;
+}
+.login-card {
+  background: #fff; border-radius: 24px; padding: 44px 32px 36px;
+  width: 100%; max-width: 400px; text-align: center;
+  box-shadow: 0 12px 40px rgba(139,125,142,0.10), 0 2px 8px rgba(139,125,142,0.05);
+  animation: cardRise 0.6s ease-out;
+}
+@keyframes cardRise { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+.login-card h2 { font-size: 26px; font-weight: 350; letter-spacing: 8px; color: var(--rose); margin-bottom: 2px; }
+.login-card .lc-sub { font-size: 12px; color: var(--text-muted); letter-spacing: 3px; margin-bottom: 32px; }
+.login-card .lc-field { margin-bottom: 18px; text-align: left; }
+.login-card .lc-field label { font-size: 11px; color: var(--text-muted); letter-spacing: 2px; display: block; margin-bottom: 8px; text-transform: uppercase; }
+.login-card .lc-field input {
+  width: 100%; padding: 13px 16px; border: 1.5px solid #e8e2e0; border-radius: 12px;
+  font-size: 15px; outline: none; transition: all 0.25s; font-family: inherit;
+  background: #fdfcfb;
+}
+.login-card .lc-field input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(196,84,123,0.10); }
+.login-btn {
+  width: 100%; background: linear-gradient(135deg, var(--rose), var(--rose-dark)); color: #fff;
+  border: none; border-radius: 14px; padding: 14px; font-size: 16px;
+  letter-spacing: 4px; cursor: pointer; margin-top: 6px; font-family: inherit;
+  box-shadow: 0 4px 20px rgba(196,84,123,0.25); transition: all 0.25s;
+}
+.login-btn:hover { box-shadow: 0 6px 28px rgba(196,84,123,0.35); transform: translateY(-1px); }
+.login-btn:active { transform: scale(0.97); }
+.login-btn:disabled { opacity: 0.45; pointer-events: none; }
+.login-error { color: #d3545c; font-size: 12px; margin-top: 12px; letter-spacing: 1px; }
+
+/* ═══ Logout ─── */
+.logout-btn {
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55);
+  border: 1px solid rgba(255,255,255,0.08); padding: 10px 24px; margin: 0 24px;
+  border-radius: 10px; cursor: pointer; font-size: 12px; letter-spacing: 2px;
+  width: calc(100% - 48px); transition: all 0.25s; font-family: inherit;
+}
+.logout-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.15); }
+
+/* ═══ App Container ─── */
+.app-container { display: flex; min-height: 100vh; }
+
+/* ═══ Sidebar ─── */
+.sidebar {
+  width: 230px; background: var(--sidebar); color: #fff;
+  padding: 28px 0; flex-shrink: 0;
+  display: flex; flex-direction: column;
+}
+.sidebar-logo { text-align: center; margin-bottom: 36px; padding: 0 24px; }
+.sidebar-logo h2 { font-size: 24px; font-weight: 350; letter-spacing: 8px; color: #fff; }
+.sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 6px; letter-spacing: 2px; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 28px; cursor: pointer;
+  color: rgba(255,255,255,0.5); font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  border-left: 3px solid transparent; letter-spacing: 1px;
+}
+.nav-item:hover { color: rgba(255,255,255,0.8); background: var(--sidebar-hover); }
+.nav-item.active { color: var(--rose); border-left-color: var(--rose); background: var(--sidebar-active); }
+
+/* ═══ Main Content ─── */
+.main-content { flex: 1; padding: 32px; overflow-y: auto; max-height: 100vh; background: var(--bg); }
+
+/* ═══ Stat Cards ─── */
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: #fff; border-radius: 16px; padding: 22px 20px;
+  box-shadow: 0 1px 3px rgba(139,125,142,0.06), 0 1px 2px rgba(139,125,142,0.04);
+  transition: all 0.25s;
+}
+.stat-card:hover { box-shadow: 0 4px 20px rgba(139,125,142,0.08); transform: translateY(-2px); }
+.stat-card .num { font-size: 38px; font-weight: 300; color: var(--rose); line-height: 1.1; }
+.stat-card .label { font-size: 12px; color: var(--text-muted); margin-top: 6px; letter-spacing: 2px; }
+
+/* ═══ Element Plus Overrides ─── */
+.el-card {
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(139,125,142,0.06), 0 1px 2px rgba(139,125,142,0.04) !important;
+  border: none !important;
+  margin-bottom: 12px;
+}
+.el-card__header { border-bottom: 1px solid #f0ecea !important; padding: 18px 20px !important; font-size: 14px !important; letter-spacing: 1px; color: var(--text); }
+.el-card__body { padding: 20px !important; }
+
+.el-button--primary {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 12px rgba(196,84,123,0.25) !important;
+  transition: all 0.25s !important;
+}
+.el-button--primary:hover { box-shadow: 0 4px 18px rgba(196,84,123,0.35) !important; transform: translateY(-1px); }
+.el-button--danger { border-radius: 10px !important; }
+.el-button--warning { border-radius: 10px !important; }
+
+.el-dialog { border-radius: 20px !important; box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important; }
+.el-dialog__header { padding: 24px 24px 0 !important; font-size: 18px !important; letter-spacing: 1px; color: var(--text); }
+.el-dialog__body { padding: 20px 24px !important; }
+.el-dialog__footer { padding: 0 24px 20px !important; }
+
+.el-form-item__label { color: var(--text-secondary) !important; font-size: 13px !important; letter-spacing: 1px; }
+.el-input__inner, .el-textarea__inner {
+  border-radius: 10px !important; border-color: #e8e2e0 !important;
+  transition: all 0.25s !important; font-family: inherit !important;
+}
+.el-input__inner:focus, .el-textarea__inner:focus { border-color: var(--rose) !important; box-shadow: 0 0 0 3px rgba(196,84,123,0.08) !important; }
+
+/* ═══ Status colors ─── */
+.status-read { color: #5a9e5f; }
+.status-unread { color: var(--text-muted); }
+.status-scheduled { color: #d4a844; }
+
+/* ═══ Responsive ─── */
+@media (max-width: 768px) {
+  .app-container { flex-direction: column; }
+  .sidebar { width: 100%; padding: 16px 0; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-logo { margin-bottom: 0; margin-right: 16px; }
+  .sidebar-logo h2 { font-size: 18px; letter-spacing: 4px; }
+  .sidebar-logo p { display: none; }
+  .nav-item { padding: 10px 16px; font-size: 12px; border-left: none; white-space: nowrap; }
+  .logout-btn { width: auto; margin: 0 8px; padding: 8px 16px; }
+  .main-content { padding: 16px; max-height: none; }
+  .stat-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 16px 14px; }
+  .stat-card .num { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ LOGIN ═══ -->
+  <div v-if="!loggedIn" class="login-page">
+    <div class="login-card">
+      <h2>念念</h2>
+      <div class="lc-sub">管理后台 · 登录</div>
+      <div class="lc-field">
+        <label>用户名</label>
+        <input v-model="loginUsername" placeholder="输入用户名">
+      </div>
+      <div class="lc-field">
+        <label>密码</label>
+        <input v-model="loginPassword" type="password" placeholder="输入密码" @keyup.enter="login">
+      </div>
+      <button class="login-btn" @click="login" :disabled="!loginUsername || !loginPassword">登 录</button>
+      <div v-if="loginError" class="login-error">{{ loginError }}</div>
+    </div>
+  </div>
+
+  <!-- ═══ ADMIN (logged in) ═══ -->
+  <div v-if="loggedIn" class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h2>念念</h2>
+        <p>管理后台</p>
+      </div>
+      <nav>
+        <div class="nav-item" :class="{active: page==='dashboard'}" @click="page='dashboard'">📊 总览</div>
+        <div class="nav-item" :class="{active: page==='letters'}" @click="page='letters'">💌 信箱管理</div>
+        <div class="nav-item" :class="{active: page==='wishes'}" @click="page='wishes'">🎯 许愿池</div>
+        <div class="nav-item" :class="{active: page==='timeline'}" @click="page='timeline'">📸 时光墙</div>
+        <div class="nav-item" :class="{active: page==='daily'}" @click="page='daily'">🎵 今日心动</div>
+        <div class="nav-item" :class="{active: page==='settings'}" @click="page='settings'">⚙️ 设置</div>
+      </nav>
+      <button class="logout-btn" @click="logout">🚪 退出登录</button>
+    </aside>
+    <main class="main-content">
+
+      <!-- Dashboard -->
+      <div v-if="page==='dashboard'">
+        <div class="stat-cards">
+          <div class="stat-card"><div class="num">{{stats.days_together}}</div><div class="label">💕 在一起 天</div></div>
+          <div class="stat-card"><div class="num">{{stats.letters_count}}</div><div class="label">💌 已写信封</div></div>
+          <div class="stat-card"><div class="num">{{stats.unread_letters}}</div><div class="label">📬 待读信件</div></div>
+          <div class="stat-card"><div class="num">{{stats.wishes_fulfilled}}/{{stats.wishes_count}}</div><div class="label">🎯 已实现愿望</div></div>
+          <div class="stat-card"><div class="num">{{stats.timeline_count}}</div><div class="label">📸 时光条目</div></div>
+          <div class="stat-card"><div class="num">{{stats.daily_count}}</div><div class="label">🎵 每日心动</div></div>
+        </div>
+        <el-card>
+          <template #header><span>📬 待处理愿望 ({{pendingWishes.length}})</span></template>
+          <div v-if="pendingWishes.length===0" style="color:#999;text-align:center;padding:20px;">暂时没有待实现的愿望</div>
+          <div v-for="w in pendingWishes" :key="w.id" style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0;">
+            <span>{{w.content}}</span>
+            <el-button type="primary" size="small" @click="fulfillWish(w.id)">✨ 实现</el-button>
+          </div>
+        </el-card>
+      </div>
+
+      <!-- Letters -->
+      <div v-if="page==='letters'">
+        <div style="display:flex;gap:12px;margin-bottom:20px;">
+          <el-button type="primary" @click="showLetterDialog=true">✍️ 写新信</el-button>
+        </div>
+        <el-card v-for="l in letters" :key="l.id" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div>
+              <strong>{{l.title}}</strong>
+              <span v-if="l.scheduled_at" style="color:#e6a23c;margin-left:8px;font-size:12px;">⏰ {{l.scheduled_at}}</span>
+              <span v-if="l.is_read" style="color:#67c23a;margin-left:8px;font-size:12px;">✓ 已读</span>
+              <span v-else style="color:#999;margin-left:8px;font-size:12px;">未读</span>
+              <span v-if="l.reaction" style="margin-left:8px;font-size:18px;">{{l.reaction}}</span>
+              <div style="color:#999;font-size:13px;margin-top:4px;">{{l.created_at}}</div>
+            </div>
+            <el-button type="danger" size="small" @click="deleteLetter(l.id)" plain>删除</el-button>
+          </div>
+        </el-card>
+      </div>
+
+      <!-- Wishes -->
+      <div v-if="page==='wishes'">
+        <el-card v-for="w in wishes" :key="w.id" style="margin-bottom:12px;" :style="w.is_fulfilled ? 'opacity:0.7;border-left:3px solid #67c23a;' : ''">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <span :style="w.is_fulfilled?'color:#67c23a;':''">{{w.content}}</span>
+              <span v-if="w.is_fulfilled" style="color:#67c23a;font-size:12px;margin-left:8px;">✨ 已实现 · {{w.fulfilled_at}}</span>
+              <span v-else style="color:#f56c6c;font-size:12px;margin-left:8px;">等待实现</span>
+              <div style="color:#999;font-size:12px;margin-top:2px;">{{w.created_at}}</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <el-button v-if="!w.is_fulfilled" type="primary" size="small" @click="fulfillWish(w.id)">✨ 实现它</el-button>
+              <el-button type="danger" size="small" @click="deleteWish(w.id)" plain>删除</el-button>
+            </div>
+          </div>
+        </el-card>
+      </div>
+
+      <!-- Timeline -->
+      <div v-if="page==='timeline'">
+        <div style="margin-bottom:20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <el-button type="primary" @click="openTimelineAdd">📸 添加回忆</el-button>
+          <span style="font-size:13px;color:#999;">
+            共 {{timeline.length}} 条 · 重要 {{timeline.filter(t=>t.is_milestone).length}} 个
+          </span>
+        </div>
+        <el-card v-for="t in timeline" :key="t.id" style="margin-bottom:12px;" :style="t.is_milestone ? 'border-left:3px solid #e8b86d;' : ''">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <strong>{{t.title}}</strong>
+                <span v-if="t.is_milestone" style="font-size:11px;background:#fef3e2;color:#e8b86d;padding:2px 8px;border-radius:10px;">⭐ 重要</span>
+                <span style="color:#999;font-size:12px;">{{t.date}}</span>
+              </div>
+              <div style="color:#666;font-size:13px;margin-top:4px;">{{t.content.substring(0,80)}}...</div>
+              <div v-if="t.photos && t.photos.length" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+                <img v-for="(p,i) in t.photos" :key="i" :src="p" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <el-button :type="t.is_milestone ? 'warning' : 'default'" size="small" @click="toggleMilestone(t.id)">{{ t.is_milestone ? '⭐ 取消' : '⭐ 标记' }}</el-button>
+              <el-button size="small" @click="openTimelineEdit(t)">编辑</el-button>
+              <el-button type="danger" size="small" @click="deleteTimeline(t.id)" plain>删除</el-button>
+            </div>
+          </div>
+        </el-card>
+      </div>
+
+      <!-- Daily Notes -->
+      <div v-if="page==='daily'">
+        <el-card v-for="d in dailyNotes" :key="d.id" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;">
+            <div style="flex:1;">
+              <strong>{{d.show_date}}</strong>
+              <div style="color:#666;font-size:14px;margin-top:4px;">💬 {{d.love_note}}</div>
+              <div v-if="d.song_name" style="color:#999;font-size:12px;">🎵 {{d.song_name}}</div>
+            </div>
+            <img v-if="d.photo_url" :src="d.photo_url" style="width:80px;height:80px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+            <el-button type="danger" size="small" @click="deleteDaily(d.id)" plain>删除</el-button>
+          </div>
+        </el-card>
+        <el-button type="primary" @click="showDailyDialog=true">📝 编辑今日心动</el-button>
+      </div>
+
+      <!-- Settings -->
+      <div v-if="page==='settings'">
+        <el-card>
+          <el-form label-width="100px">
+            <el-form-item label="纪念日" style="margin-bottom:16px;">
+              <el-input v-model="settingsForm.anniversary_date" type="date" style="width:200px;"></el-input>
+            </el-form-item>
+            <el-form-item label="情侣名" style="margin-bottom:16px;">
+              <el-input v-model="settingsForm.couple_name" style="width:300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="你的昵称" style="margin-bottom:16px;">
+              <el-input v-model="settingsForm.boy_name" style="width:300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="她的昵称" style="margin-bottom:16px;">
+              <el-input v-model="settingsForm.girl_name" style="width:300px;"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="saveSettings">保存设置</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Letter Dialog -->
+  <el-dialog v-model="showLetterDialog" title="✍️ 写一封信" width="500px">
+    <el-form label-width="70px">
+      <el-form-item label="标题"><el-input v-model="letterForm.title" placeholder="给这封信起个名字"></el-input></el-form-item>
+      <el-form-item label="内容"><el-input v-model="letterForm.content" type="textarea" rows="6" placeholder="想说的话..."></el-input></el-form-item>
+      <el-form-item label="定时发送"><el-input v-model="letterForm.scheduled_at" type="datetime-local" placeholder="留空立即发送"></el-input></el-form-item>
+    </el-form>
+    <template #footer><el-button @click="showLetterDialog=false">取消</el-button><el-button type="primary" @click="sendLetter">💌 发送</el-button></template>
+  </el-dialog>
+
+  <!-- Timeline Dialog -->
+  <el-dialog v-model="showTimelineDialog" :title="timelineEditingId ? '✏️ 编辑回忆' : '📸 添加回忆'" width="550px">
+    <el-form label-width="70px">
+      <el-form-item label="日期"><el-input v-model="timelineForm.date" type="date"></el-input></el-form-item>
+      <el-form-item label="标题"><el-input v-model="timelineForm.title"></el-input></el-form-item>
+      <el-form-item label="内容"><el-input v-model="timelineForm.content" type="textarea" rows="4"></el-input></el-form-item>
+      <el-form-item label="照片">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <el-button size="small" @click="triggerUpload('timelinePhoto')">📷 上传</el-button>
+          <input type="file" ref="timelinePhotoInput" accept="image/*" @change="uploadTimelinePhoto" style="display:none;">
+          <span v-if="timelineForm.photos.length" style="font-size:12px;color:#999;">{{timelineForm.photos.length}} 张</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+          <div v-for="(p,i) in timelineForm.photos" :key="i" style="position:relative;">
+            <img :src="p" style="width:70px;height:70px;object-fit:cover;border-radius:6px;">
+            <span @click="timelineForm.photos.splice(i,1)" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#f56c6c;color:#fff;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;">×</span>
+          </div>
+        </div>
+      </el-form-item>
+      <el-form-item label="重要时刻">
+        <el-switch v-model="timelineForm.is_milestone" active-text="⭐ 标记为重要时刻"></el-switch>
+      </el-form-item>
+    </el-form>
+    <template #footer><el-button @click="showTimelineDialog=false">取消</el-button><el-button type="primary" @click="saveTimeline">{{ timelineEditingId ? '保存' : '添加' }}</el-button></template>
+  </el-dialog>
+
+  <!-- Daily Dialog -->
+  <el-dialog v-model="showDailyDialog" title="📝 编辑今日心动" width="550px">
+    <el-form label-width="70px">
+      <el-form-item label="日期"><el-input v-model="dailyForm.show_date" type="date"></el-input></el-form-item>
+      <el-form-item label="情话">
+        <el-input v-model="dailyForm.love_note" type="textarea" rows="3" placeholder="写下今天想对她说的话..."></el-input>
+        <el-button size="small" @click="randomLoveNote" style="margin-top:6px;">🎲 随机情话</el-button>
+      </el-form-item>
+      <el-form-item label="照片">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <el-button size="small" @click="triggerUpload('dailyPhoto')">📷 上传照片</el-button>
+          <input type="file" ref="dailyPhotoInput" accept="image/*" @change="uploadDailyPhoto" style="display:none;">
+          <span v-if="dailyForm.photo_url" style="font-size:12px;color:#999;">已上传</span>
+        </div>
+        <img v-if="dailyForm.photo_url" :src="dailyForm.photo_url" style="max-width:100%;max-height:200px;margin-top:8px;border-radius:8px;">
+      </el-form-item>
+      <el-form-item label="歌名"><el-input v-model="dailyForm.song_name" placeholder="推荐一首歌"></el-input></el-form-item>
+      <el-form-item label="歌曲">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <el-input v-model="dailyForm.song_url" placeholder="音频链接或上传MP3文件" style="flex:1;"></el-input>
+          <el-button size="small" @click="triggerUpload('dailyAudio')">🎵 上传MP3</el-button>
+          <input type="file" ref="dailyAudioInput" accept="audio/*" @change="uploadDailyAudio" style="display:none;">
+        </div>
+      </el-form-item>
+    </el-form>
+    <template #footer><el-button @click="showDailyDialog=false">取消</el-button><el-button type="primary" @click="saveDaily">保存</el-button></template>
+  </el-dialog>
+
+  </div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+const { createApp, ref, onMounted, computed } = Vue;
+
+const app = createApp({
+  setup() {
+    const page = ref('dashboard');
+    const stats = ref({});
+    const letters = ref([]);
+    const wishes = ref([]);
+    const timeline = ref([]);
+    const dailyNotes = ref([]);
+
+    // ── Auth ──
+    const loggedIn = ref(false);
+    const loginUsername = ref('');
+    const loginPassword = ref('');
+    const loginError = ref('');
+
+    axios.interceptors.request.use(config => {
+      const token = localStorage.getItem('niannian_admin_token');
+      if (token) config.headers.Authorization = 'Bearer ' + token;
+      return config;
+    });
+    axios.interceptors.response.use(
+      r => r,
+      err => {
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem('niannian_admin_token');
+          loggedIn.value = false;
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    async function login() {
+      loginError.value = '';
+      try {
+        const r = await axios.post('/api/auth/login', {
+          username: loginUsername.value,
+          password: loginPassword.value
+        });
+        localStorage.setItem('niannian_admin_token', r.data.token);
+        loggedIn.value = true;
+        loginPassword.value = '';
+        loadAll();
+      } catch (e) {
+        loginError.value = (e.response && e.response.data && e.response.data.error) || '登录失败';
+      }
+    }
+
+    async function logout() {
+      try { await axios.post('/api/auth/logout'); } catch (e) {}
+      localStorage.removeItem('niannian_admin_token');
+      loggedIn.value = false;
+    }
+
+    async function restoreSession() {
+      const token = localStorage.getItem('niannian_admin_token');
+      if (!token) return;
+      try {
+        const r = await axios.get('/api/auth/me');
+        loggedIn.value = true;
+        loadAll();
+      } catch (e) {
+        localStorage.removeItem('niannian_admin_token');
+      }
+    }
+
+    // Dialog states
+    const showLetterDialog = ref(false);
+    const showTimelineDialog = ref(false);
+    const showDailyDialog = ref(false);
+
+    const letterForm = ref({ title:'', content:'', scheduled_at:'' });
+    const timelineForm = ref({ date:'', title:'', content:'', photos:[], is_milestone:false });
+    const dailyForm = ref({ show_date: new Date().toISOString().split('T')[0], love_note:'', photo_url:'', song_name:'', song_url:'' });
+    const dailyPhotoInput = ref(null);
+    const dailyAudioInput = ref(null);
+    const timelinePhotoInput = ref(null);
+    const timelineEditingId = ref(null);
+    const settingsForm = ref({});
+
+    const pendingWishes = computed(() => wishes.value.filter(w => !w.is_fulfilled));
+
+    async function loadStats() {
+      const res = await axios.get('/api/stats');
+      stats.value = res.data;
+      settingsForm.value = {
+        anniversary_date: res.data.anniversary_date,
+        couple_name: res.data.couple_name,
+        boy_name: res.data.boy_name,
+        girl_name: res.data.girl_name,
+      };
+    }
+
+    async function loadLetters() { const r = await axios.get('/api/letters'); letters.value = r.data; }
+    async function loadWishes() { const r = await axios.get('/api/wishes'); wishes.value = r.data; }
+    async function loadTimeline() { const r = await axios.get('/api/timeline'); timeline.value = r.data; }
+    async function loadDaily() { const r = await axios.get('/api/daily'); dailyNotes.value = r.data; }
+
+    async function loadAll() {
+      await Promise.all([loadStats(), loadWishes()]);
+      await Promise.all([loadLetters(), loadTimeline(), loadDaily()]);
+    }
+
+    async function sendLetter() {
+      await axios.post('/api/letters', letterForm.value);
+      showLetterDialog.value = false;
+      letterForm.value = { title:'', content:'', scheduled_at:'' };
+      await loadLetters(); await loadStats();
+      ElementPlus.ElMessage.success('信已发出 💌');
+    }
+
+    async function deleteLetter(id) {
+      await axios.delete('/api/letters/' + id);
+      await loadLetters(); await loadStats();
+      ElementPlus.ElMessage.success('已删除');
+    }
+
+    async function fulfillWish(id) {
+      await axios.put('/api/wishes/' + id + '/fulfill');
+      await loadWishes(); await loadStats();
+      ElementPlus.ElMessage.success('愿望已实现 ✨');
+    }
+
+    async function deleteWish(id) {
+      await axios.delete('/api/wishes/' + id);
+      await loadWishes(); await loadStats();
+    }
+
+    function openTimelineAdd() {
+      timelineEditingId.value = null;
+      timelineForm.value = { date:'', title:'', content:'', photos:[], is_milestone:false };
+      showTimelineDialog.value = true;
+    }
+    function openTimelineEdit(t) {
+      timelineEditingId.value = t.id;
+      timelineForm.value = {
+        date: t.date, title: t.title, content: t.content,
+        photos: [...(t.photos || [])], is_milestone: !!t.is_milestone
+      };
+      showTimelineDialog.value = true;
+    }
+    async function saveTimeline() {
+      if (timelineEditingId.value) {
+        await axios.patch('/api/timeline/' + timelineEditingId.value, timelineForm.value);
+      } else {
+        await axios.post('/api/timeline', timelineForm.value);
+      }
+      showTimelineDialog.value = false;
+      timelineEditingId.value = null;
+      timelineForm.value = { date:'', title:'', content:'', photos:[], is_milestone:false };
+      await loadTimeline(); await loadStats();
+      ElementPlus.ElMessage.success(timelineEditingId.value ? '已更新' : '已添加入时光墙');
+    }
+    async function toggleMilestone(id) {
+      const r = await axios.patch('/api/timeline/' + id + '/milestone');
+      await loadTimeline();
+      ElementPlus.ElMessage.success(r.data.message);
+    }
+
+    async function deleteTimeline(id) {
+      await axios.delete('/api/timeline/' + id);
+      await loadTimeline(); await loadStats();
+    }
+
+    async function saveDaily() {
+      await axios.post('/api/daily', dailyForm.value);
+      showDailyDialog.value = false;
+      await loadDaily(); await loadStats();
+      ElementPlus.ElMessage.success('已保存');
+    }
+
+    async function deleteDaily(id) {
+      await axios.delete('/api/daily/' + id);
+      await loadDaily(); await loadStats();
+    }
+
+    async function saveSettings() {
+      await axios.put('/api/stats/settings', settingsForm.value);
+      await loadStats();
+      ElementPlus.ElMessage.success('设置已更新');
+    }
+
+    // Photo upload for daily note
+    function triggerUpload(refName) {
+      if (refName === 'dailyPhoto') dailyPhotoInput.value.click();
+      if (refName === 'dailyAudio') dailyAudioInput.value.click();
+      if (refName === 'timelinePhoto') timelinePhotoInput.value.click();
+    }
+    async function uploadTimelinePhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      const r = await axios.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (!timelineForm.value.photos) timelineForm.value.photos = [];
+      timelineForm.value.photos.push(r.data.url);
+      e.target.value = '';
+      ElementPlus.ElMessage.success('照片已上传');
+    }
+    async function uploadDailyAudio(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      const r = await axios.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      dailyForm.value.song_url = r.data.url;
+      if (!dailyForm.value.song_name) dailyForm.value.song_name = file.name.replace(/\.[^.]+$/, '');
+      ElementPlus.ElMessage.success('音频已上传，前端可直接播放 🎵');
+    }
+    async function uploadDailyPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      const r = await axios.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      dailyForm.value.photo_url = r.data.url;
+      ElementPlus.ElMessage.success('照片已上传');
+    }
+    async function randomLoveNote() {
+      const r = await axios.get('/api/daily/random');
+      dailyForm.value.love_note = r.data.love_note;
+    }
+
+    onMounted(() => { restoreSession(); });
+
+    return {
+      page, stats, letters, wishes, timeline, dailyNotes,
+      // Auth
+      loggedIn, loginUsername, loginPassword, loginError, login, logout,
+      // Dialogs
+      showLetterDialog, showTimelineDialog, showDailyDialog,
+      letterForm, timelineForm, dailyForm, settingsForm,
+      pendingWishes, loadAll,
+      sendLetter, deleteLetter, fulfillWish, deleteWish,
+      openTimelineAdd, openTimelineEdit, saveTimeline, toggleMilestone, deleteTimeline,
+      saveDaily, deleteDaily, saveSettings,
+      dailyPhotoInput, dailyAudioInput, timelinePhotoInput, timelineEditingId,
+      triggerUpload, uploadDailyPhoto, uploadDailyAudio, uploadTimelinePhoto, randomLoveNote,
+    };
+  }
+});
+
+app.use(ElementPlus);
+app.mount('#app');
+</script>
+</body>
+</html>

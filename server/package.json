@@ -1,0 +1,19 @@
+{
+  "name": "nian-nian-server",
+  "version": "1.0.0",
+  "description": "念念 - 两个人的私密空间",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "multer": "^2.0.0",
+    "NeteaseCloudMusicApi": "^4.31.0",
+    "sql.js": "^1.12.0",
+    "ws": "^8.18.0"
+  }
+}

@@ -1,0 +1,16 @@
+data/
+node_modules/
+qrcode*.png
+tunnel-url.txt
+*.db
+.DS_Store
+keep-tunnel.bat
+启动隧道.bat
+tunnel_output.txt
+当前链接.txt
+start.bat
+start.js
+deploy.js
+deploy.sh
+extract.js
+Procfile
