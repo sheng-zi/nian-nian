@@ -16,7 +16,8 @@ app.use(cors());
 app.use(express.json());
 
 // ═══ File upload ═══
-const uploadDir = path.join(__dirname, '..', 'data', 'uploads');
+const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
+const uploadDir = path.join(dataDir, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const upload = multer({ dest: uploadDir });
 app.use('/uploads', express.static(uploadDir));
