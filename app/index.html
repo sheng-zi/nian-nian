@@ -1337,7 +1337,7 @@ body.identity-boy .login-page {
           <span @click="newTimelinePhotos.splice(i,1)" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#f56c6c;color:#fff;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;">×</span>
         </div>
       </div>
-      <input type="file" ref="timelinePhotoInput" accept="image/*" @change="uploadTimelinePhoto" style="display:none;">
+      <input type="file" ref="timelinePhotoInput" accept="image/*" multiple @change="uploadTimelinePhoto" style="display:none;">
       <button class="whisper-send-btn" style="padding:8px 20px;font-size:13px;" @click="$refs.timelinePhotoInput.click()">
         📷 添加照片
       </button>
@@ -2123,12 +2123,14 @@ const app = createApp({
       vant.showToast('信已寄出 💌');
     }
     async function uploadTimelinePhoto(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
-      const r = await axios.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      newTimelinePhotos.value.push(r.data.url);
+      const files = e.target.files;
+      if (!files.length) return;
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const r = await axios.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        newTimelinePhotos.value.push(r.data.url);
+      }
       e.target.value = '';
     }
     async function toggleMilestone(id) {

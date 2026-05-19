@@ -352,7 +352,7 @@ body { background: var(--bg); font-family: var(--font-sans); -webkit-font-smooth
       <el-form-item label="照片">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <el-button size="small" @click="triggerUpload('timelinePhoto')">📷 上传</el-button>
-          <input type="file" ref="timelinePhotoInput" accept="image/*" @change="uploadTimelinePhoto" style="display:none;">
+          <input type="file" ref="timelinePhotoInput" accept="image/*" multiple @change="uploadTimelinePhoto" style="display:none;">
           <span v-if="timelineForm.photos.length" style="font-size:12px;color:#999;">{{timelineForm.photos.length}} 张</span>
         </div>
         <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
@@ -603,15 +603,17 @@ const app = createApp({
       if (refName === 'timelinePhoto') timelinePhotoInput.value.click();
     }
     async function uploadTimelinePhoto(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
-      const r = await axios.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const files = e.target.files;
+      if (!files.length) return;
       if (!timelineForm.value.photos) timelineForm.value.photos = [];
-      timelineForm.value.photos.push(r.data.url);
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const r = await axios.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        timelineForm.value.photos.push(r.data.url);
+      }
       e.target.value = '';
-      ElementPlus.ElMessage.success('照片已上传');
+      ElementPlus.ElMessage.success(`已上传 ${files.length} 张照片`);
     }
     async function uploadDailyAudio(e) {
       const file = e.target.files[0];
