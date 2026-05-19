@@ -2168,6 +2168,14 @@ const app = createApp({
       loadTimeline(); loadStats();
     }
     async function deleteTimeline(id) {
+      try {
+        await vant.showConfirmDialog({
+          title: '确定删除',
+          message: '删除后无法恢复，确定要删除这条回忆吗？'
+        });
+      } catch (e) {
+        return; // user cancelled
+      }
       await axios.delete('/api/timeline/' + id);
       loadTimeline(); loadStats();
       vant.showToast('回忆已删除');
