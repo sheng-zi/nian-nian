@@ -564,8 +564,18 @@ const app = createApp({
     }
 
     async function deleteTimeline(id) {
+      try {
+        await ElementPlus.ElMessageBox.confirm('确定要删除这条回忆吗？删除后无法恢复。', '提示', {
+          confirmButtonText: '确定删除',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+      } catch (e) {
+        return; // user cancelled
+      }
       await axios.delete('/api/timeline/' + id);
       await loadTimeline(); await loadStats();
+      ElementPlus.ElMessage.success('已删除');
     }
 
     async function saveDaily() {
