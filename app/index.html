@@ -1343,7 +1343,7 @@ body.identity-boy .login-page {
       </button>
     </div>
 
-    <button class="lc-send" :disabled="!newTimelineTitle.trim() || !newTimelineContent.trim()" @click="addTimeline">
+    <button class="lc-send" :disabled="!newTimelineTitle.trim() && !newTimelineContent.trim() && !newTimelinePhotos.length" @click="addTimeline">
       {{ editingTimelineId ? '💾 更新回忆' : '💾 保存回忆' }}
     </button>
   </div>
@@ -2146,7 +2146,7 @@ const app = createApp({
       currentPage.value = 'timeline-compose';
     }
     async function addTimeline() {
-      if (!newTimelineTitle.value.trim() || !newTimelineContent.value.trim()) return;
+      if (!newTimelineTitle.value.trim() && !newTimelineContent.value.trim() && !newTimelinePhotos.value.length) return;
       const payload = {
         date: newTimelineDate.value,
         title: newTimelineTitle.value.trim(),
