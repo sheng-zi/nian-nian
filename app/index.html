@@ -904,7 +904,7 @@ body.identity-boy .login-page {
         </div>
         <div style="text-align:center;">
           <div class="lc-avatar" :class="{selected: loginRole === 'girl'}" @click="loginRole = 'girl'">👧</div>
-          <div class="lc-avatar-label">{{ stats.girl_name || '彭子萱' }}</div>
+          <div class="lc-avatar-label">{{ stats.girl_name || '猫咪小姐' }}</div>
         </div>
       </div>
       <div class="lc-field">
@@ -1193,7 +1193,7 @@ body.identity-boy .login-page {
         <div class="wi-seal">💌</div>
         <div class="wi-content">{{ w.content.length > 60 ? w.content.slice(0, 60) + '...' : w.content }}</div>
         <div class="wi-meta">
-          <span class="wi-from">{{ w.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '彭子萱') }}</span>
+          <span class="wi-from">{{ w.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}</span>
           {{ w.created_at }}
         </div>
       </div>
@@ -1213,7 +1213,7 @@ body.identity-boy .login-page {
         <div class="wr-label">悄悄话</div>
         <div class="wr-content">{{ revealWhisper.content }}</div>
         <div class="wr-from">
-          — {{ revealWhisper.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '彭子萱') }}
+          — {{ revealWhisper.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}
         </div>
         <button class="wr-btn" @click="dismissWhisper">已阅，收藏心底 💕</button>
       </div>
@@ -1278,7 +1278,7 @@ body.identity-boy .login-page {
     <!-- Timeline cards -->
     <div v-for="t in timeline" :key="t.id" class="tl-card fade-in" :class="{milestone: t.is_milestone}">
       <div v-if="t.is_milestone" class="tl-badge">⭐ 重要时刻</div>
-      <div class="tl-date">{{t.date}} · {{ t.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '彭子萱') }}</div>
+      <div class="tl-date">{{t.date}} · {{ t.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}</div>
       <div class="tl-title">{{t.title}}</div>
       <div class="tl-content">{{t.content}}</div>
       <div v-if="t.photos && t.photos.length" class="tl-photos">
@@ -1405,7 +1405,7 @@ body.identity-boy .login-page {
         </div>
         <div class="mood-card" :class="{'has-mood': todayMoods.girl_mood}" @click="currentUser.role === 'girl' && openMoodPicker('girl')" :style="currentUser.role !== 'girl' ? 'cursor:default;opacity:0.85;' : ''">
           <div class="mood-avatar">👧</div>
-          <div class="mood-name">{{ stats.girl_name || '彭子萱' }}</div>
+          <div class="mood-name">{{ stats.girl_name || '猫咪小姐' }}</div>
           <div v-if="todayMoods.girl_mood" class="mood-current">{{ todayMoods.girl_mood }}</div>
           <div v-else class="mood-hint">{{ currentUser.role === 'girl' ? '点击签到' : '未签到' }}</div>
         </div>
@@ -1458,7 +1458,7 @@ body.identity-boy .login-page {
     <div class="daily-msg-section">
       <div class="dms-title">💬 今天想对你说</div>
       <div class="daily-msg-card" v-if="todayPartnerMsg">
-        <div class="dms-from">{{ currentUser.role === 'boy' ? (stats.girl_name || '彭子萱') : (stats.boy_name || '狐狸先生') }} 对你说：</div>
+        <div class="dms-from">{{ currentUser.role === 'boy' ? (stats.girl_name || '猫咪小姐') : (stats.boy_name || '狐狸先生') }} 对你说：</div>
         <div class="dms-text">{{ todayPartnerMsg }}</div>
       </div>
       <div v-else style="font-size:12px;color:var(--text-muted);margin-bottom:8px;letter-spacing:1px;">
@@ -1485,7 +1485,7 @@ body.identity-boy .login-page {
     <div v-if="moodPickerVisible" class="mood-picker-overlay" @click.self="moodPickerVisible = false">
       <div class="mood-picker-panel">
         <div class="picker-title">
-          {{ moodPickerAuthor === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '彭子萱') }} 的今日心情
+          {{ moodPickerAuthor === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }} 的今日心情
         </div>
         <div class="mood-grid">
           <button v-for="m in moodOptions" :key="m" class="mood-option"
@@ -1615,7 +1615,7 @@ body.identity-boy .login-page {
 
   <!-- Thinking-of-you global toast & hearts -->
   <div v-if="thinkingVisible" class="thinking-toast">
-    {{ currentUser.role === 'boy' ? (stats.girl_name || '彭子萱') : (stats.boy_name || '狐狸先生') }} 此时此刻正在想你 💕
+    {{ currentUser.role === 'boy' ? (stats.girl_name || '猫咪小姐') : (stats.boy_name || '狐狸先生') }} 此时此刻正在想你 💕
   </div>
   <div v-if="thinkingHearts.length" class="hearts-float">
     <span v-for="(h, i) in thinkingHearts" :key="i" class="heart"

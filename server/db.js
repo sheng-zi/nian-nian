@@ -152,9 +152,9 @@ async function initDB() {
   // Default settings
   const defaults = {
     'anniversary_date': '2026-04-13',
-    'couple_name': '张学晟 & 彭子萱',
+    'couple_name': '张学晟 & 猫咪小姐',
     'boy_name': '狐狸先生',
-    'girl_name': '彭子萱',
+    'girl_name': '猫咪小姐',
   };
   for (const [key, value] of Object.entries(defaults)) {
     db.run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [key, value]);
@@ -302,7 +302,7 @@ function seedIfEmpty() {
   if (count && count.count === 0) {
     dbWrapper.prepare(
       'INSERT INTO letters (title, content, is_read) VALUES (?, ?, ?)'
-    ).run('💌 欢迎来到念念', '嗨，彭子萱。\n\n这是属于我们两个人的私密空间。\n\n以后我会在这里给你写信，你随时可以回来看。每一封信都是我想对你说的话。\n\n你可以去许愿池扔愿望，我会一个一个帮你实现。\n\n你可以去时光墙看看我们的故事。\n\n你也可以每天来这里看看"今日心动"，那里有我为你准备的每日一份甜。\n\n—— 永远爱你的狐狸先生 🦊', 0);
+    ).run('💌 欢迎来到念念', '嗨，猫咪小姐。\n\n这是属于我们两个人的私密空间。\n\n以后我会在这里给你写信，你随时可以回来看。每一封信都是我想对你说的话。\n\n你可以去许愿池扔愿望，我会一个一个帮你实现。\n\n你可以去时光墙看看我们的故事。\n\n你也可以每天来这里看看"今日心动"，那里有我为你准备的每日一份甜。\n\n—— 永远爱你的狐狸先生 🦊', 0);
 
     dbWrapper.prepare(
       'INSERT INTO wishes (content, author) VALUES (?, ?)'
@@ -347,7 +347,7 @@ function seedIfEmpty() {
     ).run('boy', boy.hash, boy.salt, 'boy', '狐狸先生');
     dbWrapper.prepare(
       'INSERT INTO users (username, password_hash, salt, role, display_name) VALUES (?, ?, ?, ?, ?)'
-    ).run('girl', girl.hash, girl.salt, 'girl', '彭子萱');
+    ).run('girl', girl.hash, girl.salt, 'girl', '猫咪小姐');
     saveDB();
     console.log('  👤 已创建默认账号: boy/fox123, girl/peng123');
   }
