@@ -2292,10 +2292,12 @@ const app = createApp({
     async function sendComment(timelineId) {
       const input = commentInputs.value[timelineId];
       if (!input || !input.trim()) return;
-      await axios.post('/api/timeline/' + timelineId + '/comments', { content: input.trim() });
+      const r = await axios.post('/api/timeline/' + timelineId + '/comments', { content: input.trim() });
       commentInputs.value = { ...commentInputs.value, [timelineId]: '' };
       replyTarget.value = null;
-      await loadComments(timelineId);
+      // Append locally (no extra request)
+      const arr = [...(timelineComments.value[timelineId] || []), r.data];
+      timelineComments.value = { ...timelineComments.value, [timelineId]: arr };
     }
 
     function replyTo(timelineId, commentId) {
@@ -2306,15 +2308,18 @@ const app = createApp({
     async function sendReply(timelineId, parentId) {
       const input = replyInputs.value[parentId];
       if (!input || !input.trim()) return;
-      await axios.post('/api/timeline/' + timelineId + '/comments', { content: input.trim(), parent_id: parentId });
+      const r = await axios.post('/api/timeline/' + timelineId + '/comments', { content: input.trim(), parent_id: parentId });
       replyInputs.value = { ...replyInputs.value, [parentId]: '' };
       replyTarget.value = null;
-      await loadComments(timelineId);
+      const arr = [...(timelineComments.value[timelineId] || []), r.data];
+      timelineComments.value = { ...timelineComments.value, [timelineId]: arr };
     }
 
     async function deleteComment(timelineId, commentId) {
       await axios.delete('/api/timeline/' + timelineId + '/comments/' + commentId);
-      await loadComments(timelineId);
+      // Remove locally (no extra request)
+      const arr = (timelineComments.value[timelineId] || []).filter(c => c.id !== commentId);
+      timelineComments.value = { ...timelineComments.value, [timelineId]: arr };
     }
 
     async function addWish() {

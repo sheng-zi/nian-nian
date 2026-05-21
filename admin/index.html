@@ -634,7 +634,8 @@ const app = createApp({
     }
     async function deleteComment(timelineId, commentId) {
       await axios.delete('/api/timeline/' + timelineId + '/comments/' + commentId);
-      await loadComments(timelineId);
+      const arr = (timelineComments.value[timelineId] || []).filter(c => c.id !== commentId);
+      timelineComments.value = { ...timelineComments.value, [timelineId]: arr };
     }
 
     async function saveDaily() {
