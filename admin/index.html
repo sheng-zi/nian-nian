@@ -289,7 +289,8 @@ body { background: var(--bg); font-family: var(--font-sans); -webkit-font-smooth
                 <div v-if="showComments[t.id]" style="margin-top:4px;">
                   <div v-for="c in (timelineComments[t.id] || [])" :key="c.id" style="font-size:12px;color:#666;padding:3px 0;display:flex;align-items:center;gap:6px;" :style="c.parent_id ? 'margin-left:16px;border-left:2px solid #f0e0e8;padding-left:10px;' : ''">
                     <span style="color:#c4547b;">{{ c.author === 'boy' ? '狐狸先生' : '猫咪小姐' }}</span>
-                    <span v-if="c.parent_id" style="font-size:10px;color:#ccc;">回复</span>
+                    <span v-if="c.parent_id" style="font-size:11px;color:#bbb;">回复</span>
+                    <span v-if="c.parent_id" style="font-size:11px;color:#c4547b;">@{{ getCommentAuthor(t.id, c.parent_id) }}</span>
                     <span style="flex:1;">{{ c.content }}</span>
                     <el-button size="small" type="danger" text @click="deleteComment(t.id, c.id)">×</el-button>
                   </div>
@@ -609,6 +610,12 @@ const app = createApp({
       showComments.value = { ...showComments.value, [timelineId]: !current };
       if (!current) loadComments(timelineId);
     }
+    function getCommentAuthor(timelineId, commentId) {
+      const comments = timelineComments.value[timelineId] || [];
+      const c = comments.find(x => x.id === commentId);
+      if (!c) return '';
+      return c.author === 'boy' ? '狐狸先生' : '猫咪小姐';
+    }
     async function deleteComment(timelineId, commentId) {
       await axios.delete('/api/timeline/' + timelineId + '/comments/' + commentId);
       await loadComments(timelineId);
@@ -687,7 +694,7 @@ const app = createApp({
       pendingWishes, loadAll,
       sendLetter, deleteLetter, fulfillWish, deleteWish,
       openTimelineAdd, openTimelineEdit, saveTimeline, toggleMilestone, deleteTimeline,
-      timelineComments, showComments, toggleComments, deleteComment,
+      timelineComments, showComments, toggleComments, getCommentAuthor, deleteComment,
       saveDaily, deleteDaily, saveSettings,
       dailyPhotoInput, dailyAudioInput, timelinePhotoInput, timelineEditingId,
       triggerUpload, uploadDailyPhoto, uploadDailyAudio, uploadTimelinePhoto, randomLoveNote,

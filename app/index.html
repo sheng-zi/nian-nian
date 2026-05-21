@@ -401,6 +401,8 @@ body.identity-boy .login-page {
 .tl-cmt-reply { color: #ccc; cursor: pointer; font-size: 11px; flex-shrink: 0; white-space: nowrap; }
 .tl-cmt-reply:hover { color: var(--rose); }
 .tl-cmt-reply-item { margin-left: 16px; padding: 3px 0; border-left: 2px solid #f0e6ec; padding-left: 10px; }
+.tl-cmt-reply-to { color: #bbb; font-size: 11px; flex-shrink: 0; }
+.tl-cmt-reply-target { color: var(--rose); font-size: 11px; font-weight: 500; flex-shrink: 0; }
 .tl-cmt-reply-input { padding-left: 10px; }
 .tl-cmt-input { display: flex; gap: 6px; margin-top: 8px; }
 .tl-cmt-input input { flex: 1; border: 1px solid #f0e0e8; border-radius: 16px; padding: 6px 14px; font-size: 12px; outline: none; background: rgba(255,255,255,0.6); color: var(--text); }
@@ -1325,6 +1327,8 @@ body.identity-boy .login-page {
           <!-- Replies -->
           <div v-for="r in getReplies(t.id, c.id)" :key="r.id" class="tl-cmt tl-cmt-reply-item">
             <span class="tl-cmt-author">{{ r.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}</span>
+            <span class="tl-cmt-reply-to">回复</span>
+            <span class="tl-cmt-reply-target">@{{ getCommentAuthor(t.id, c.id) }}</span>
             <span class="tl-cmt-content">{{ r.content }}</span>
             <span @click="replyTo(t.id, c.id)" class="tl-cmt-reply">回复</span>
             <span v-if="r.author === currentUser.role" @click="deleteComment(t.id, r.id)" class="tl-cmt-del">×</span>
@@ -2239,6 +2243,12 @@ const app = createApp({
     function getReplies(timelineId, parentId) {
       return (timelineComments.value[timelineId] || []).filter(c => c.parent_id === parentId);
     }
+    function getCommentAuthor(timelineId, commentId) {
+      const comments = timelineComments.value[timelineId] || [];
+      const c = comments.find(x => x.id === commentId);
+      if (!c) return '';
+      return c.author === 'boy' ? (stats.value.boy_name || '狐狸先生') : (stats.value.girl_name || '猫咪小姐');
+    }
 
     async function loadComments(timelineId) {
       try {
@@ -2348,7 +2358,7 @@ const app = createApp({
       addTimeline, editTimeline, deleteTimeline, toggleMilestone, editingTimelineId, newTimelineDate, newTimelineTitle, newTimelineContent, newTimelinePhotos, timelinePhotoInput, uploadTimelinePhoto,
       // Comments
       timelineComments, commentInputs, replyTarget, replyInputs,
-      getTopComments, getReplies, replyTo, sendReply, sendComment, deleteComment, loadComments,
+      getTopComments, getReplies, getCommentAuthor, replyTo, sendReply, sendComment, deleteComment, loadComments,
       // Whispers
       whispers, newWhisper, whisperSigned, revealWhisper, whisperUnread,
       sendWhisper, openWhisper, dismissWhisper,
