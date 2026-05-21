@@ -1320,31 +1320,31 @@ body.identity-boy .login-page {
 
       <!-- Comments -->
       <div class="tl-comments" @click.stop>
-        <div v-for="c in getTopComments(t.id)" :key="c.id">
-          <div class="tl-cmt">
-            <span class="tl-cmt-author">{{ c.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}</span>
-            <span class="tl-cmt-content">{{ c.content }}</span>
-            <span @click="replyTo(t.id, c.id)" class="tl-cmt-reply">回复</span>
-            <span v-if="c.author === currentUser.role" @click="deleteComment(t.id, c.id)" class="tl-cmt-del">×</span>
-          </div>
-          <!-- Replies -->
-          <div v-for="r in getReplies(t.id, c.id)" :key="r.id" class="tl-cmt tl-cmt-reply-item">
-            <div class="tl-cmt-reply-block">
-              <div class="tl-cmt-reply-quote">回复 @{{ getCommentAuthor(t.id, c.id) }}：{{ getCommentContent(t.id, c.id) }}</div>
-              <div class="tl-cmt-reply-body">
-                <span class="tl-cmt-author">{{ r.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}</span>
-                <span class="tl-cmt-content">{{ r.content }}</span>
-              </div>
+        <template v-if="timelineComments[t.id]">
+          <div v-for="c in timelineComments[t.id].tops" :key="c.id">
+            <div class="tl-cmt">
+              <span class="tl-cmt-author">{{ c.authorName }}</span>
+              <span class="tl-cmt-content">{{ c.content }}</span>
+              <span @click="replyTo(t.id, c.id)" class="tl-cmt-reply">回复</span>
+              <span v-if="c.author === currentUser.role" @click="deleteComment(t.id, c.id)" class="tl-cmt-del">×</span>
             </div>
-            <span @click="replyTo(t.id, c.id)" class="tl-cmt-reply">回复</span>
-            <span v-if="r.author === currentUser.role" @click="deleteComment(t.id, r.id)" class="tl-cmt-del">×</span>
+            <div v-for="r in c.replies" :key="r.id" class="tl-cmt tl-cmt-reply-item">
+              <div class="tl-cmt-reply-block">
+                <div class="tl-cmt-reply-quote">回复 @{{ r.parentAuthor }}：{{ r.parentContent }}</div>
+                <div class="tl-cmt-reply-body">
+                  <span class="tl-cmt-author">{{ r.authorName }}</span>
+                  <span class="tl-cmt-content">{{ r.content }}</span>
+                </div>
+              </div>
+              <span @click="replyTo(t.id, c.id)" class="tl-cmt-reply">回复</span>
+              <span v-if="r.author === currentUser.role" @click="deleteComment(t.id, r.id)" class="tl-cmt-del">×</span>
+            </div>
+            <div v-if="replyTarget === c.id" class="tl-cmt-input tl-cmt-reply-input">
+              <input v-model="replyInputs[c.id]" placeholder="回复..." maxlength="200" @keyup.enter="sendReply(t.id, c.id)">
+              <button @click="sendReply(t.id, c.id)">发送</button>
+            </div>
           </div>
-          <!-- Reply input for this comment -->
-          <div v-if="replyTarget === c.id" class="tl-cmt-input tl-cmt-reply-input">
-            <input v-model="replyInputs[c.id]" placeholder="回复..." maxlength="200" @keyup.enter="sendReply(t.id, c.id)">
-            <button @click="sendReply(t.id, c.id)">发送</button>
-          </div>
-        </div>
+        </template>
         <div class="tl-cmt-input" v-if="replyTarget === null">
           <input v-model="commentInputs[t.id]" placeholder="写评论..." maxlength="200" @keyup.enter="sendComment(t.id)">
           <button @click="sendComment(t.id)">发送</button>
@@ -1717,7 +1717,7 @@ const app = createApp({
     const wishes = ref([]);
     const myWishes = ref([]);
     const timeline = ref([]);
-    const timelineComments = ref({});  // { timelineId: [comments] }
+    const timelineComments = ref({});  // { timelineId: { tops, list } } — pre-computed for O(1) render
     const commentInputs = ref({});     // { timelineId: inputText }
     const replyTarget = ref(null);     // currently replying to which comment id
     const replyInputs = ref({});       // { commentId: replyText }
@@ -2092,11 +2092,11 @@ const app = createApp({
         axios.get('/api/timeline/stats')
       ]);
       timeline.value = r1.data;
-      // Extract comments from timeline response
       const grouped = {};
+      const { bn, gn } = getNames();
       for (const item of r1.data) {
         if (item.comments && item.comments.length) {
-          grouped[item.id] = item.comments;
+          grouped[item.id] = enrichComments(item.comments, bn, gn);
         }
       }
       timelineComments.value = grouped;
@@ -2251,32 +2251,57 @@ const app = createApp({
     }
 
     // ── Timeline Comments ──
-    function getTopComments(timelineId) {
-      return (timelineComments.value[timelineId] || []).filter(c => !c.parent_id);
+    function getNames() {
+      const bn = (stats.value && stats.value.boy_name) || '狐狸先生';
+      const gn = (stats.value && stats.value.girl_name) || '猫咪小姐';
+      return { bn, gn };
     }
-    function getReplies(timelineId, parentId) {
-      return (timelineComments.value[timelineId] || []).filter(c => c.parent_id === parentId);
+
+    // Build pre-computed { tops, list } from flat comments for O(1) template rendering
+    function enrichComments(comments, bn, gn) {
+      const list = comments.map(c => ({
+        ...c,
+        authorName: c.author === 'boy' ? bn : gn,
+        replies: []
+      }));
+      const byId = {};
+      const tops = [];
+      for (const c of list) { byId[c.id] = c; }
+      for (const c of list) {
+        if (c.parent_id && byId[c.parent_id]) {
+          c.parentAuthor = byId[c.parent_id].authorName;
+          c.parentContent = byId[c.parent_id].content;
+          byId[c.parent_id].replies.push(c);
+        }
+        if (!c.parent_id) tops.push(c);
+      }
+      return { tops, list };
     }
-    function getCommentAuthor(timelineId, commentId) {
-      const comments = timelineComments.value[timelineId] || [];
-      const c = comments.find(x => x.id === commentId);
-      if (!c) return '';
-      return c.author === 'boy' ? (stats.value.boy_name || '狐狸先生') : (stats.value.girl_name || '猫咪小姐');
+
+    function makeOptimistic(timelineId, author, content, parentId) {
+      return {
+        id: 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        timeline_id: timelineId, author, content, parent_id: parentId || null,
+        created_at: new Date().toISOString()
+      };
     }
-    function getCommentContent(timelineId, commentId) {
-      const comments = timelineComments.value[timelineId] || [];
-      const c = comments.find(x => x.id === commentId);
-      return c ? c.content : '';
+
+    function applyEnriched(timelineId, list) {
+      const { bn, gn } = getNames();
+      timelineComments.value = { ...timelineComments.value, [timelineId]: enrichComments(list, bn, gn) };
     }
 
     async function loadAllComments() {
       try {
         const r = await axios.get('/api/timeline/comments/all');
-        // Group comments by timeline_id
         const grouped = {};
+        const { bn, gn } = getNames();
         for (const c of r.data) {
           if (!grouped[c.timeline_id]) grouped[c.timeline_id] = [];
           grouped[c.timeline_id].push(c);
+        }
+        for (const [id, arr] of Object.entries(grouped)) {
+          grouped[id] = enrichComments(arr, bn, gn);
         }
         timelineComments.value = grouped;
       } catch (e) { /* ok */ }
@@ -2285,19 +2310,31 @@ const app = createApp({
     async function loadComments(timelineId) {
       try {
         const r = await axios.get('/api/timeline/' + timelineId + '/comments');
-        timelineComments.value = { ...timelineComments.value, [timelineId]: r.data };
+        const { bn, gn } = getNames();
+        timelineComments.value = { ...timelineComments.value, [timelineId]: enrichComments(r.data, bn, gn) };
       } catch (e) { /* ok */ }
     }
 
     async function sendComment(timelineId) {
       const input = commentInputs.value[timelineId];
       if (!input || !input.trim()) return;
-      const r = await axios.post('/api/timeline/' + timelineId + '/comments', { content: input.trim() });
+      const content = input.trim();
       commentInputs.value = { ...commentInputs.value, [timelineId]: '' };
       replyTarget.value = null;
-      // Append locally (no extra request)
-      const arr = [...(timelineComments.value[timelineId] || []), r.data];
-      timelineComments.value = { ...timelineComments.value, [timelineId]: arr };
+      const role = currentUser.value.role;
+      const optimistic = makeOptimistic(timelineId, role, content, null);
+      const prev = timelineComments.value[timelineId];
+      const prevList = prev ? prev.list : [];
+      applyEnriched(timelineId, [...prevList, optimistic]);
+      try {
+        const r = await axios.post('/api/timeline/' + timelineId + '/comments', { content });
+        const cur = timelineComments.value[timelineId];
+        applyEnriched(timelineId, cur.list.map(c => c.id === optimistic.id ? r.data : c));
+      } catch (e) {
+        applyEnriched(timelineId, prevList);
+        commentInputs.value = { ...commentInputs.value, [timelineId]: content };
+        vant.showToast('发送失败，请重试');
+      }
     }
 
     function replyTo(timelineId, commentId) {
@@ -2308,18 +2345,35 @@ const app = createApp({
     async function sendReply(timelineId, parentId) {
       const input = replyInputs.value[parentId];
       if (!input || !input.trim()) return;
-      const r = await axios.post('/api/timeline/' + timelineId + '/comments', { content: input.trim(), parent_id: parentId });
+      const content = input.trim();
       replyInputs.value = { ...replyInputs.value, [parentId]: '' };
       replyTarget.value = null;
-      const arr = [...(timelineComments.value[timelineId] || []), r.data];
-      timelineComments.value = { ...timelineComments.value, [timelineId]: arr };
+      const role = currentUser.value.role;
+      const optimistic = makeOptimistic(timelineId, role, content, parentId);
+      const prev = timelineComments.value[timelineId];
+      const prevList = prev ? prev.list : [];
+      applyEnriched(timelineId, [...prevList, optimistic]);
+      try {
+        const r = await axios.post('/api/timeline/' + timelineId + '/comments', { content, parent_id: parentId });
+        const cur = timelineComments.value[timelineId];
+        applyEnriched(timelineId, cur.list.map(c => c.id === optimistic.id ? r.data : c));
+      } catch (e) {
+        applyEnriched(timelineId, prevList);
+        replyInputs.value = { ...replyInputs.value, [parentId]: content };
+        vant.showToast('发送失败，请重试');
+      }
     }
 
     async function deleteComment(timelineId, commentId) {
-      await axios.delete('/api/timeline/' + timelineId + '/comments/' + commentId);
-      // Remove locally (no extra request)
-      const arr = (timelineComments.value[timelineId] || []).filter(c => c.id !== commentId);
-      timelineComments.value = { ...timelineComments.value, [timelineId]: arr };
+      const prev = timelineComments.value[timelineId];
+      const prevList = prev ? prev.list : [];
+      applyEnriched(timelineId, prevList.filter(c => c.id !== commentId));
+      try {
+        await axios.delete('/api/timeline/' + timelineId + '/comments/' + commentId);
+      } catch (e) {
+        applyEnriched(timelineId, prevList);
+        vant.showToast('删除失败，请重试');
+      }
     }
 
     async function addWish() {
@@ -2389,7 +2443,7 @@ const app = createApp({
       addTimeline, editTimeline, deleteTimeline, toggleMilestone, editingTimelineId, newTimelineDate, newTimelineTitle, newTimelineContent, newTimelinePhotos, timelinePhotoInput, uploadTimelinePhoto,
       // Comments
       timelineComments, commentInputs, replyTarget, replyInputs,
-      getTopComments, getReplies, getCommentAuthor, getCommentContent, replyTo, sendReply, sendComment, deleteComment, loadComments,
+      replyTo, sendReply, sendComment, deleteComment, loadComments,
       // Whispers
       whispers, newWhisper, whisperSigned, revealWhisper, whisperUnread,
       sendWhisper, openWhisper, dismissWhisper,
