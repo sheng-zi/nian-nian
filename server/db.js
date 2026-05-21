@@ -155,10 +155,18 @@ async function initDB() {
       timeline_id INTEGER NOT NULL,
       author TEXT NOT NULL,
       content TEXT NOT NULL,
+      parent_id INTEGER DEFAULT NULL,
       created_at TEXT DEFAULT (datetime('now','localtime')),
       FOREIGN KEY (timeline_id) REFERENCES timeline_items(id) ON DELETE CASCADE
     )
   `);
+
+  // Migration: add parent_id column if not exists
+  try {
+    db.run('ALTER TABLE timeline_comments ADD COLUMN parent_id INTEGER DEFAULT NULL');
+  } catch (e) {
+    // column already exists, ignore
+  }
 
   // Default settings
   const defaults = {

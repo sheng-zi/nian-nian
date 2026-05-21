@@ -287,8 +287,9 @@ body { background: var(--bg); font-family: var(--font-sans); -webkit-font-smooth
                   💬 {{ (timelineComments[t.id] || []).length || 0 }} 条评论
                 </el-button>
                 <div v-if="showComments[t.id]" style="margin-top:4px;">
-                  <div v-for="c in (timelineComments[t.id] || [])" :key="c.id" style="font-size:12px;color:#666;padding:3px 0;display:flex;align-items:center;gap:6px;">
+                  <div v-for="c in (timelineComments[t.id] || [])" :key="c.id" style="font-size:12px;color:#666;padding:3px 0;display:flex;align-items:center;gap:6px;" :style="c.parent_id ? 'margin-left:16px;border-left:2px solid #f0e0e8;padding-left:10px;' : ''">
                     <span style="color:#c4547b;">{{ c.author === 'boy' ? '狐狸先生' : '猫咪小姐' }}</span>
+                    <span v-if="c.parent_id" style="font-size:10px;color:#ccc;">回复</span>
                     <span style="flex:1;">{{ c.content }}</span>
                     <el-button size="small" type="danger" text @click="deleteComment(t.id, c.id)">×</el-button>
                   </div>

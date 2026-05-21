@@ -106,14 +106,14 @@ router.get('/:id/comments', (req, res) => {
   res.json(comments);
 });
 
-// Add a comment
+// Add a comment (or reply)
 router.post('/:id/comments', (req, res) => {
-  const { content } = req.body;
+  const { content, parent_id } = req.body;
   const author = req.user ? req.user.role : 'boy';
   const result = db.prepare(
-    'INSERT INTO timeline_comments (timeline_id, author, content) VALUES (?, ?, ?)'
-  ).run(req.params.id, author, content);
-  res.json({ id: result.lastInsertRowid, author, content, message: '评论已发送' });
+    'INSERT INTO timeline_comments (timeline_id, author, content, parent_id) VALUES (?, ?, ?, ?)'
+  ).run(req.params.id, author, content, parent_id || null);
+  res.json({ id: result.lastInsertRowid, author, content, parent_id: parent_id || null, message: parent_id ? '回复已发送' : '评论已发送' });
 });
 
 // Delete a comment
