@@ -596,14 +596,22 @@ const app = createApp({
     }
 
     // ── Timeline Comments ──
+    async function loadAllComments() {
+      try {
+        const r = await axios.get('/api/timeline/comments/all');
+        const grouped = {};
+        for (const c of r.data) {
+          if (!grouped[c.timeline_id]) grouped[c.timeline_id] = [];
+          grouped[c.timeline_id].push(c);
+        }
+        timelineComments.value = grouped;
+      } catch (e) { /* ok */ }
+    }
     async function loadComments(timelineId) {
       try {
         const r = await axios.get('/api/timeline/' + timelineId + '/comments');
         timelineComments.value = { ...timelineComments.value, [timelineId]: r.data };
       } catch (e) { /* ok */ }
-    }
-    async function loadAllComments() {
-      for (const t of timeline.value) { await loadComments(t.id); }
     }
     function toggleComments(timelineId) {
       const current = showComments.value[timelineId];

@@ -98,6 +98,14 @@ router.delete('/:id', (req, res) => {
 
 // ── Comments ──
 
+// Get all comments for all timeline items (single request)
+router.get('/comments/all', (req, res) => {
+  const comments = db.prepare(
+    'SELECT * FROM timeline_comments ORDER BY created_at ASC'
+  ).all();
+  res.json(comments);
+});
+
 // Get comments for a timeline item
 router.get('/:id/comments', (req, res) => {
   const comments = db.prepare(
