@@ -4,7 +4,6 @@ const http = require('http');
 const { WebSocketServer } = require('ws');
 const path = require('path');
 const fs = require('fs');
-const zlib = require('zlib');
 const multer = require('multer');
 const { initDB, seedIfEmpty } = require('./db');
 const { start: startBackup, doBackup } = require('./backup');
@@ -13,23 +12,7 @@ const app = express();
 const server = http.createServer(app);
 
 // ═══ Middleware ═══
-app.use((req, res, next) => {
-  const accept = req.headers['accept-encoding'] || '';
-  if (!accept.includes('gzip')) return next();
-  const original = res.send;
-  res.send = function (body) {
-    if (res.getHeader('Content-Encoding') || !body || res.statusCode >= 300 && res.statusCode < 400) return original.call(this, body);
-    const buf = typeof body === 'string' ? Buffer.from(body) : body;
-    if (buf.length < 1024) return original.call(this, buf);
-    zlib.gzip(buf, (err, zipped) => {
-      if (err) return original.call(this, buf);
-      res.setHeader('Content-Encoding', 'gzip');
-      res.setHeader('Vary', 'Accept-Encoding');
-      original.call(this, zipped);
-    });
-  };
-  next();
-});
+app.use(require('compression')());
 app.use(cors());
 app.use(express.json());
 
