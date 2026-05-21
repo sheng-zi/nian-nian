@@ -25,8 +25,12 @@ app.use('/uploads', express.static(uploadDir));
 app.use('/music', express.static(path.join(__dirname, '..', 'music')));
 
 // ═══ Static frontends ═══
-app.use('/app', express.static(path.join(__dirname, '..', 'app')));
-app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
+const nocache = (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  next();
+};
+app.use('/app', nocache, express.static(path.join(__dirname, '..', 'app')));
+app.use('/admin', nocache, express.static(path.join(__dirname, '..', 'admin')));
 
 // ═══ Public routes (no auth required) ═══
 app.use('/api/auth', require('./routes/auth'));

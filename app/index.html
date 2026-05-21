@@ -2092,6 +2092,14 @@ const app = createApp({
         axios.get('/api/timeline/stats')
       ]);
       timeline.value = r1.data;
+      // Extract comments from timeline response
+      const grouped = {};
+      for (const item of r1.data) {
+        if (item.comments && item.comments.length) {
+          grouped[item.id] = item.comments;
+        }
+      }
+      timelineComments.value = grouped;
       onThisDay.value = r2.data;
       timelineStats.value = r3.data;
       lastSeenTimeline.value = timeline.value.length;
@@ -2347,7 +2355,7 @@ const app = createApp({
       }
       if (page === 'whispers') loadWhispers();
       if (page === 'wishes') { loadWishes(); loadMyWishes(); }
-      if (page === 'timeline') { loadTimeline(); loadAllComments(); }
+      if (page === 'timeline') { loadTimeline(); }
       if (page === 'mailbox') loadLetters();
     });
 

@@ -10,10 +10,17 @@ router.get('/', (req, res) => {
   } else {
     items = db.prepare('SELECT * FROM timeline_items ORDER BY date DESC').all();
   }
+  const allComments = db.prepare('SELECT * FROM timeline_comments ORDER BY created_at ASC').all();
+  const commentsByTimeline = {};
+  for (const c of allComments) {
+    if (!commentsByTimeline[c.timeline_id]) commentsByTimeline[c.timeline_id] = [];
+    commentsByTimeline[c.timeline_id].push(c);
+  }
   res.json(items.map(item => ({
     ...item,
     photos: JSON.parse(item.photos || '[]'),
-    is_milestone: !!item.is_milestone
+    is_milestone: !!item.is_milestone,
+    comments: commentsByTimeline[item.id] || []
   })));
 });
 

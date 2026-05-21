@@ -516,7 +516,15 @@ const app = createApp({
 
     async function loadLetters() { const r = await axios.get('/api/letters'); letters.value = r.data; }
     async function loadWishes() { const r = await axios.get('/api/wishes'); wishes.value = r.data; }
-    async function loadTimeline() { const r = await axios.get('/api/timeline'); timeline.value = r.data; loadAllComments(); }
+    async function loadTimeline() {
+      const r = await axios.get('/api/timeline');
+      timeline.value = r.data;
+      const grouped = {};
+      for (const item of r.data) {
+        if (item.comments && item.comments.length) grouped[item.id] = item.comments;
+      }
+      timelineComments.value = grouped;
+    }
     async function loadDaily() { const r = await axios.get('/api/daily'); dailyNotes.value = r.data; }
 
     async function loadAll() {
