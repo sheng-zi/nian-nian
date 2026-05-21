@@ -281,6 +281,19 @@ body { background: var(--bg); font-family: var(--font-sans); -webkit-font-smooth
               <div v-if="t.photos && t.photos.length" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
                 <img v-for="(p,i) in t.photos" :key="i" :src="p" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
               </div>
+              <!-- comments -->
+              <div style="margin-top:6px;">
+                <el-button size="small" text @click="toggleComments(t.id)">
+                  💬 {{ (timelineComments[t.id] || []).length || 0 }} 条评论
+                </el-button>
+                <div v-if="showComments[t.id]" style="margin-top:4px;">
+                  <div v-for="c in (timelineComments[t.id] || [])" :key="c.id" style="font-size:12px;color:#666;padding:3px 0;display:flex;align-items:center;gap:6px;">
+                    <span style="color:#c4547b;">{{ c.author === 'boy' ? '狐狸先生' : '猫咪小姐' }}</span>
+                    <span style="flex:1;">{{ c.content }}</span>
+                    <el-button size="small" type="danger" text @click="deleteComment(t.id, c.id)">×</el-button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
               <el-button :type="t.is_milestone ? 'warning' : 'default'" size="small" @click="toggleMilestone(t.id)">{{ t.is_milestone ? '⭐ 取消' : '⭐ 标记' }}</el-button>
@@ -412,6 +425,8 @@ const app = createApp({
     const letters = ref([]);
     const wishes = ref([]);
     const timeline = ref([]);
+    const timelineComments = ref({});
+    const showComments = ref({});
     const dailyNotes = ref([]);
 
     // ── Auth ──
@@ -499,7 +514,7 @@ const app = createApp({
 
     async function loadLetters() { const r = await axios.get('/api/letters'); letters.value = r.data; }
     async function loadWishes() { const r = await axios.get('/api/wishes'); wishes.value = r.data; }
-    async function loadTimeline() { const r = await axios.get('/api/timeline'); timeline.value = r.data; }
+    async function loadTimeline() { const r = await axios.get('/api/timeline'); timeline.value = r.data; loadAllComments(); }
     async function loadDaily() { const r = await axios.get('/api/daily'); dailyNotes.value = r.data; }
 
     async function loadAll() {
@@ -578,6 +593,26 @@ const app = createApp({
       ElementPlus.ElMessage.success('已删除');
     }
 
+    // ── Timeline Comments ──
+    async function loadComments(timelineId) {
+      try {
+        const r = await axios.get('/api/timeline/' + timelineId + '/comments');
+        timelineComments.value = { ...timelineComments.value, [timelineId]: r.data };
+      } catch (e) { /* ok */ }
+    }
+    async function loadAllComments() {
+      for (const t of timeline.value) { await loadComments(t.id); }
+    }
+    function toggleComments(timelineId) {
+      const current = showComments.value[timelineId];
+      showComments.value = { ...showComments.value, [timelineId]: !current };
+      if (!current) loadComments(timelineId);
+    }
+    async function deleteComment(timelineId, commentId) {
+      await axios.delete('/api/timeline/' + timelineId + '/comments/' + commentId);
+      await loadComments(timelineId);
+    }
+
     async function saveDaily() {
       await axios.post('/api/daily', dailyForm.value);
       showDailyDialog.value = false;
@@ -651,6 +686,7 @@ const app = createApp({
       pendingWishes, loadAll,
       sendLetter, deleteLetter, fulfillWish, deleteWish,
       openTimelineAdd, openTimelineEdit, saveTimeline, toggleMilestone, deleteTimeline,
+      timelineComments, showComments, toggleComments, deleteComment,
       saveDaily, deleteDaily, saveSettings,
       dailyPhotoInput, dailyAudioInput, timelinePhotoInput, timelineEditingId,
       triggerUpload, uploadDailyPhoto, uploadDailyAudio, uploadTimelinePhoto, randomLoveNote,

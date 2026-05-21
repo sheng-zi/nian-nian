@@ -149,6 +149,17 @@ async function initDB() {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS timeline_comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timeline_id INTEGER NOT NULL,
+      author TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now','localtime')),
+      FOREIGN KEY (timeline_id) REFERENCES timeline_items(id) ON DELETE CASCADE
+    )
+  `);
+
   // Default settings
   const defaults = {
     'anniversary_date': '2026-04-13',

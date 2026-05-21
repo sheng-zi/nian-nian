@@ -96,4 +96,31 @@ router.delete('/:id', (req, res) => {
   res.json({ message: '已删除' });
 });
 
+// ── Comments ──
+
+// Get comments for a timeline item
+router.get('/:id/comments', (req, res) => {
+  const comments = db.prepare(
+    'SELECT * FROM timeline_comments WHERE timeline_id = ? ORDER BY created_at ASC'
+  ).all(req.params.id);
+  res.json(comments);
+});
+
+// Add a comment
+router.post('/:id/comments', (req, res) => {
+  const { content } = req.body;
+  const author = req.user ? req.user.role : 'boy';
+  const result = db.prepare(
+    'INSERT INTO timeline_comments (timeline_id, author, content) VALUES (?, ?, ?)'
+  ).run(req.params.id, author, content);
+  res.json({ id: result.lastInsertRowid, author, content, message: '评论已发送' });
+});
+
+// Delete a comment
+router.delete('/:id/comments/:commentId', (req, res) => {
+  db.prepare('DELETE FROM timeline_comments WHERE id = ? AND timeline_id = ?')
+    .run(req.params.commentId, req.params.id);
+  res.json({ message: '已删除' });
+});
+
 module.exports = router;
