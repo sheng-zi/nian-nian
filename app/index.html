@@ -400,7 +400,10 @@ body.identity-boy .login-page {
 .tl-cmt-del:hover { color: #e88; }
 .tl-cmt-reply { color: #ccc; cursor: pointer; font-size: 11px; flex-shrink: 0; white-space: nowrap; }
 .tl-cmt-reply:hover { color: var(--rose); }
-.tl-cmt-reply-item { margin-left: 16px; padding: 3px 0; border-left: 2px solid #f0e6ec; padding-left: 10px; }
+.tl-cmt-reply-item { margin-left: 12px; padding: 2px 0; border-left: none; }
+.tl-cmt-reply-block { flex: 1; min-width: 0; }
+.tl-cmt-reply-quote { font-size: 11px; color: #8b8b8b; background: #f8f3f5; border-radius: 6px; padding: 4px 10px; margin-bottom: 4px; line-height: 1.5; word-break: break-word; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.tl-cmt-reply-body { display: flex; gap: 6px; align-items: flex-start; }
 .tl-cmt-reply-to { color: #bbb; font-size: 11px; flex-shrink: 0; }
 .tl-cmt-reply-target { color: var(--rose); font-size: 11px; font-weight: 500; flex-shrink: 0; }
 .tl-cmt-reply-input { padding-left: 10px; }
@@ -1326,10 +1329,13 @@ body.identity-boy .login-page {
           </div>
           <!-- Replies -->
           <div v-for="r in getReplies(t.id, c.id)" :key="r.id" class="tl-cmt tl-cmt-reply-item">
-            <span class="tl-cmt-author">{{ r.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}</span>
-            <span class="tl-cmt-reply-to">回复</span>
-            <span class="tl-cmt-reply-target">@{{ getCommentAuthor(t.id, c.id) }}</span>
-            <span class="tl-cmt-content">{{ r.content }}</span>
+            <div class="tl-cmt-reply-block">
+              <div class="tl-cmt-reply-quote">回复 @{{ getCommentAuthor(t.id, c.id) }}：{{ getCommentContent(t.id, c.id) }}</div>
+              <div class="tl-cmt-reply-body">
+                <span class="tl-cmt-author">{{ r.author === 'boy' ? (stats.boy_name || '狐狸先生') : (stats.girl_name || '猫咪小姐') }}</span>
+                <span class="tl-cmt-content">{{ r.content }}</span>
+              </div>
+            </div>
             <span @click="replyTo(t.id, c.id)" class="tl-cmt-reply">回复</span>
             <span v-if="r.author === currentUser.role" @click="deleteComment(t.id, r.id)" class="tl-cmt-del">×</span>
           </div>
@@ -2249,6 +2255,11 @@ const app = createApp({
       if (!c) return '';
       return c.author === 'boy' ? (stats.value.boy_name || '狐狸先生') : (stats.value.girl_name || '猫咪小姐');
     }
+    function getCommentContent(timelineId, commentId) {
+      const comments = timelineComments.value[timelineId] || [];
+      const c = comments.find(x => x.id === commentId);
+      return c ? c.content : '';
+    }
 
     async function loadComments(timelineId) {
       try {
@@ -2358,7 +2369,7 @@ const app = createApp({
       addTimeline, editTimeline, deleteTimeline, toggleMilestone, editingTimelineId, newTimelineDate, newTimelineTitle, newTimelineContent, newTimelinePhotos, timelinePhotoInput, uploadTimelinePhoto,
       // Comments
       timelineComments, commentInputs, replyTarget, replyInputs,
-      getTopComments, getReplies, getCommentAuthor, replyTo, sendReply, sendComment, deleteComment, loadComments,
+      getTopComments, getReplies, getCommentAuthor, getCommentContent, replyTo, sendReply, sendComment, deleteComment, loadComments,
       // Whispers
       whispers, newWhisper, whisperSigned, revealWhisper, whisperUnread,
       sendWhisper, openWhisper, dismissWhisper,
